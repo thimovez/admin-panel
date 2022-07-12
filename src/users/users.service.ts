@@ -14,7 +14,7 @@ export class UsersService {
 
     async createUser(dto: CreateUserDto) {
         const user = await this.userRepository.create(dto);
-        const role = await this.roleService.getRoleByValue("USER");
+        const role = await this.roleService.getRoleByValue("ADMIN");
         await user.$set("roles", [role.id]);
         user.roles = [role]
         return user;
@@ -41,7 +41,14 @@ export class UsersService {
     }
 
     async ban(dto: BanUserDto) {
-        
+        const user = await this.userRepository.findByPk(dto.userId);
+        if (!user) {
+            throw new HttpException("Пользователь не найдет", HttpStatus.NOT_FOUND)
+        }
+        user.banned = true;
+        user.banReason = dto.banReason;
+        await user.save();
+        return user;
     }
 
     // async deleteUser(user: User) {
